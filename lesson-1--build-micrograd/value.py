@@ -5,6 +5,7 @@ class Value:
     def __init__(self, data, _children=(), _op='', label=''):
         self.data = data
         self.label = label
+        self.grad = 0.0
 
         self._prev = set(_children)
         self._op = _op
@@ -30,7 +31,7 @@ def _draw_dot(root):
     nodes, edges = _trace_graph(root)
     for n in nodes:
         uid = str(id(n))
-        label = '{' + f'{n.label} | {n.data:.4f}' + '}'
+        label = '{' + f'{n.label} | data {n.data:.4f} | grad {n.grad:.4f}' + '}'
         dot.node(uid, label=label, shape='record')
 
         if n._op:
