@@ -5,10 +5,34 @@ class Value:
     def __init__(self, data, _children=(), _op='', label=''):
         self.data = data
         self.label = label
-        self.grad = 0.0
+        self.grad = None
 
         self._prev = set(_children)
         self._op = _op
+
+    def backward(self, verbose=False):
+        if verbose:
+            print('Running backward for:', self.label)
+        if self.grad is None:
+            raise ValueError('Missing grad value.')
+
+        if len(self._prev) == 0:
+            # Leaf node -> done with this part of the graph
+            return None
+        elif len(self._prev) != 2:
+            raise ValueError('Should have 0 or 2 inputs.')
+
+        left, right = self._prev
+        # Chain rule! Woot woot.
+        for (curr, other) in [(left, right), (right, left)]:
+            if self._op == '+':
+                curr.grad = self.grad
+            elif self._op == '*':
+                curr.grad = self.grad * other.data
+            else:
+                raise ValueError(f'Invalid op: {self._op}')
+            # Propagate that shiz
+            curr.backward(verbose=verbose) 
 
     def __repr__(self):
         return f"Value({self.data})"
