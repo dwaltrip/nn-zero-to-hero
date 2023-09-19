@@ -1,3 +1,4 @@
+import math
 from graphviz import Digraph
 
 
@@ -5,34 +6,11 @@ class Value:
     def __init__(self, data, _children=(), _op='', label=''):
         self.data = data
         self.label = label
-        self.grad = None
+        self.grad = 0.0
+        self._backward = lambda: None
 
         self._prev = set(_children)
         self._op = _op
-
-    def backward(self, verbose=False):
-        if verbose:
-            print('Running backward for:', self.label)
-        if self.grad is None:
-            raise ValueError('Missing grad value.')
-
-        if len(self._prev) == 0:
-            # Leaf node -> done with this part of the graph
-            return None
-        elif len(self._prev) != 2:
-            raise ValueError('Should have 0 or 2 inputs.')
-
-        left, right = self._prev
-        # Chain rule! Woot woot.
-        for (curr, other) in [(left, right), (right, left)]:
-            if self._op == '+':
-                curr.grad = self.grad
-            elif self._op == '*':
-                curr.grad = self.grad * other.data
-            else:
-                raise ValueError(f'Invalid op: {self._op}')
-            # Propagate that shiz
-            curr.backward(verbose=verbose) 
 
     def __repr__(self):
         return f"Value({self.data})"
@@ -42,11 +20,55 @@ class Value:
     
     def __add__(self, other):
         out = Value(self.data + other.data, (self, other), '+')
+
+        def _backward():
+            self.grad += 1.0 * out.grad
+            other.grad += 1.0 * out.grad
+
+        out._backward = _backward
         return out
 
     def __mul__(self, other):
         out = Value(self.data * other.data, (self, other), '*')
+
+        def _backward():
+            self.grad += other.data * out.grad 
+            other.grad += self.data * out.grad
+
+        out._backward = _backward
         return out
+    
+    def tanh(self):
+        x = self.data
+        t = (math.exp(2*x) - 1) / (math.exp(2*x) + 1)
+        out = Value(t, (self,), 'tanh')
+
+        def _backward():
+            self.grad += (1 - t**2) * out.grad
+
+        out._backward = _backward
+        return out
+    
+    def backward(self, verbose=False):
+        def build_topo_sorted(node):
+            topo_sorted = []
+            visited = set()
+            def recurse(v):
+                if v not in visited:
+                    visited.add(v)
+                    for child in v._prev:
+                        recurse(child)
+                topo_sorted.append(v)
+            recurse(node)
+            return topo_sorted
+
+        topo_sorted = build_topo_sorted(self)
+
+        self.grad = 1.0
+        for node in reversed(topo_sorted):
+            if verbose:
+                print('backward for:', node.label)
+            node._backward()
 
 
 def _draw_dot(root):
