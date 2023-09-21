@@ -1,7 +1,7 @@
 from value import Value
 
 
-def testing_backward():
+def example():
     x1 = Value(2.0, label='x1')
     x2 = Value(0.0, label='x2')
     w1 = Value(-3.0, label='w1')
@@ -18,6 +18,30 @@ def testing_backward():
     o.build_viz().view()
 
 
+def example_v2():
+    x1 = Value(2.0, label='x1')
+    x2 = Value(0.0, label='x2')
+    w1 = Value(-3.0, label='w1')
+    w2 = Value(1.0, label='w2')
+    b = Value(6.8813735870195432, label='b')
+    # x1*w1 + x2*w2 + b
+    x1w1 = x1*w1; x1w1.label = 'x1*w1'
+    x2w2 = x2*w2; x2w2.label = 'x2*w2'
+    x1w1_x2w2 = x1w1 + x2w2; x1w1_x2w2.label = 'x1*w1 + x2*w2'
+    n = x1w1_x2w2 + b; n.label = 'n'
+
+    # ----
+    # n_e = (2 * n).exp()
+    # o = (n_e - 1) / (n_e + 1)
+    # ----
+    o = ((2 * n).exp() - 1) / ((2 * n).exp() + 1)
+    # ----
+    o.label = 'o'
+
+    o.backward(verbose=True)
+    o.build_viz().view()
+
+
 def verify_fix_with_using_var_twice():
     a = Value(3.0, label='a')
     b = a + a; b.label = 'b'
@@ -27,5 +51,6 @@ def verify_fix_with_using_var_twice():
 
 
 if __name__ == '__main__':
-    testing_backward()
+    # example()
+    example_v2()
     # verify_fix_with_using_var_twice()
