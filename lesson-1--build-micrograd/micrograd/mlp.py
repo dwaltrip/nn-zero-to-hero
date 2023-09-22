@@ -1,5 +1,5 @@
 import random
-from value import Value
+from micrograd.value import Value
 
 
 class Neuron:

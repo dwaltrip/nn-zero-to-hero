@@ -1,6 +1,6 @@
 import sys
 
-from value import Value
+from micrograd.value import Value
 
 
 # H needs to be much smaller than the grad check treshhold,

@@ -1,4 +1,4 @@
-from value import Value
+from micrograd.value import Value
 
 
 def lol():
