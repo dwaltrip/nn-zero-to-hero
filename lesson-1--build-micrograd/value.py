@@ -132,7 +132,12 @@ def _draw_dot(root):
     nodes, edges = _trace_graph(root)
     for n in nodes:
         uid = str(id(n))
-        label = '{' + f'{n.label} | data {n.data:.4f} | grad {n.grad:.4f}' + '}'
+        label_parts = [
+            n.label,
+            f'data {n.data:.4f}',
+            f'grad {n.grad:.4f}',
+        ]
+        label = '{' + ' | '.join([p for p in label_parts if p]) + '}'
         dot.node(uid, label=label, shape='record')
 
         if n._op:
