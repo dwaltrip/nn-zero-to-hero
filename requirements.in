@@ -1,4 +1,6 @@
 graphviz
+ipykernel
+jupyter
 matplotlib
 numpy
 ptpython
